@@ -1,8 +1,3 @@
-/*
-golang开发的压力测试工具, 以goroutine模拟连接数
-
-stress -c 200 -n 10 -u http://0.0.0.0:8080/none
-*/
 package main
 
 import (
