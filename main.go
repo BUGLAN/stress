@@ -3,10 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/BUGLAN/stress/client"
 	"log"
 	"net/http"
 	"runtime"
-	"stress/client"
 	"sync"
 	"time"
 )
