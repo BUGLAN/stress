@@ -3,12 +3,13 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/BUGLAN/stress/client"
 	"log"
 	"net/http"
 	"runtime"
 	"sync"
 	"time"
+
+	"github.com/BUGLAN/stress/client"
 )
 
 var (
