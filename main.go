@@ -21,10 +21,9 @@ var (
 )
 
 func main() {
-	startTime := time.Now()
-
 	// set runtime process
 	runtime.GOMAXPROCS(1)
+	startTime := time.Now()
 
 	// set flag vars
 	flag.StringVar(&url, "u", "", "url 链接 https://www.baidu.com")
