@@ -34,13 +34,11 @@ func Post(url string, header http.Header, body, v interface{}) error {
 }
 
 func request(method, url string, header http.Header, body io.Reader, timeout time.Duration) (io.ReadCloser, error) {
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	}
-
 	client := &http.Client{
-		Transport: tr,
-		Timeout:   timeout,
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		},
+		Timeout: timeout,
 	}
 	// new a request
 	req, err := http.NewRequest(method, url, body)
