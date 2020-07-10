@@ -11,6 +11,7 @@ import (
 	"github.com/BUGLAN/stress/server"
 )
 
+// application entrance
 func main() {
 	// set runtime process
 	runtime.GOMAXPROCS(1)
@@ -22,8 +23,8 @@ func main() {
 	flag.IntVar(&model.Num, "n", 0, "连接数")
 	flag.IntVar(&model.Coroutines, "c", 0, "并发数")
 	flag.BoolVar(&model.Debug, "d", false, "debug模式")
-
 	flag.Parse()
+
 	if model.Help {
 		flag.Usage()
 		return

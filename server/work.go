@@ -9,7 +9,7 @@ import (
 	"github.com/BUGLAN/stress/client"
 	"github.com/BUGLAN/stress/model"
 )
-
+// Stress run the stress testing
 func Stress(url string, ch chan *model.ReqResult, wg *sync.WaitGroup) {
 	defer wg.Done()
 	var w sync.WaitGroup
@@ -21,6 +21,7 @@ func Stress(url string, ch chan *model.ReqResult, wg *sync.WaitGroup) {
 	w.Wait()
 }
 
+// Process do the process work, like http, websocket, grpc
 func Process(url string, ch chan *model.ReqResult, requestTime int64, wg *sync.WaitGroup) {
 	defer wg.Done()
 	err := client.Get(url, http.Header{})

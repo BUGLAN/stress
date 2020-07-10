@@ -5,5 +5,4 @@ type ReqResult struct {
 	RequestTime uint64 // 请求时间
 	ProcessTime uint64 // 处理时间
 	IsSuccess   bool   // 是否成功
-
 }
