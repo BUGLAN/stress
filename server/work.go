@@ -9,6 +9,7 @@ import (
 	"github.com/BUGLAN/stress/client"
 	"github.com/BUGLAN/stress/model"
 )
+
 // Stress run the stress testing
 func Stress(url string, ch chan *model.ReqResult, wg *sync.WaitGroup) {
 	defer wg.Done()
@@ -37,7 +38,7 @@ func Process(url string, ch chan *model.ReqResult, requestTime int64, wg *sync.W
 	ch <- &model.ReqResult{
 		IsSuccess:   isSuccess,
 		StatusCode:  200,
-		ProcessTime: uint64(time.Now().UnixNano() - requestTime),
+		ProcessTime: float64(time.Now().UnixNano() - requestTime),
 		RequestTime: uint64(requestTime),
 	}
 }

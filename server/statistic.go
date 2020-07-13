@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"math"
 	"sync"
 	"time"
 
@@ -17,22 +18,24 @@ func ReceiveData(ch chan *model.ReqResult, wg *sync.WaitGroup) {
 	var (
 		qps              float64 // qps 每秒请求数
 		requestTotalTime uint64  // 请求总时间
-		totalProcessTime uint64  // 请求总耗时
+		totalProcessTime float64 // 请求总耗时
 		totalSuccessNum  uint64  // 请求总成功数
 		totalFailureNum  uint64  // 请求总失败数
-		MaxTime          uint64  // 单个请求最大耗时
-		MinTime          uint64  // 单个请求最少耗时
-		avgTime          uint64  // 平均请求耗时
+		maxTime          float64 // 单个请求最大耗时
+		minTime          float64 // 单个请求最少耗时
+		avgTime          float64 // 平均请求耗时
 		concurrentNum    uint64  // 并发数
 		currRequestNum   uint64  // 当前请求数
 	)
+
+	// 排除minTime为0的情况
+	minTime = math.MaxFloat64
 
 	go func() {
 		for {
 			select {
 			case <-ticker.C:
-				fmt.Printf("%4ds│%7d│%7d│%7d│%8.2f│%8d│%8d│%8d│ 错误码\n", totalProcessTime/1e9, concurrentNum, totalSuccessNum, totalFailureNum, qps, MaxTime/1e9, MinTime/1e9, avgTime/1e9)
-				// tableContent()
+				out(totalProcessTime, concurrentNum, totalSuccessNum, totalFailureNum, qps, maxTime, minTime, avgTime)
 			case <-stopChan:
 				fmt.Println("STOP!!!")
 				return
@@ -47,16 +50,18 @@ func ReceiveData(ch chan *model.ReqResult, wg *sync.WaitGroup) {
 	// 接收channel中的数据
 	for data := range ch {
 		// 最大耗时
-		if data.ProcessTime > MaxTime {
-			MaxTime = data.ProcessTime
+		if data.ProcessTime > maxTime {
+			maxTime = data.ProcessTime
 		}
+
+		// fmt.Printf("data.ProcessTime %f\n", data.ProcessTime)
+		// fmt.Printf("minTime %f\n", minTime)
 
 		// 最小耗时
-		if data.ProcessTime < MinTime && MinTime != 0 {
-			MinTime = data.ProcessTime
+		if data.ProcessTime < minTime {
+			minTime = data.ProcessTime
 		}
 
-		// 请求总耗时
 		totalProcessTime += data.ProcessTime
 
 		// 请求成功/失败数
@@ -66,14 +71,14 @@ func ReceiveData(ch chan *model.ReqResult, wg *sync.WaitGroup) {
 			totalFailureNum++
 		}
 
-		// 并发数
+		// 并发数(请求数)
 		concurrentNum++
 
 		// 平均耗时
-		avgTime = totalProcessTime / concurrentNum
+		avgTime = totalProcessTime / float64(concurrentNum)
 
 		// qps
-		qps = float64(1e9 / avgTime)
+		qps = 1e9 / avgTime
 
 	}
 
@@ -83,12 +88,10 @@ func ReceiveData(ch chan *model.ReqResult, wg *sync.WaitGroup) {
 	// 输出压测文档
 	// done
 	_ = requestTotalTime
-	_ = totalSuccessNum
-	_ = totalFailureNum
-	_ = avgTime
 	_ = concurrentNum
 	_ = currRequestNum
-	fmt.Printf("%4ds│%7d│%7d│%7d│%8.2f│%8d│%8d│%8d│错误码\n", totalProcessTime/1e9, concurrentNum, totalSuccessNum, totalFailureNum, qps, MaxTime/1e9, MinTime/1e9, avgTime)
+	// 最后的输出到控制台 传入
+	out(totalProcessTime, concurrentNum, totalSuccessNum, totalFailureNum, qps, maxTime, minTime, avgTime)
 
 }
 
@@ -98,10 +101,8 @@ func tableHeader() {
 	fmt.Println("─────┼───────┼───────┼───────┼────────┼────────┼────────┼────────┼────────")
 }
 
-func table() {
-
-}
-
-func work() {
+// out 输出到控制台 单位为纳秒(ns)
+func out(totalProcessTime float64, concurrentNum, totalSuccessNum, totalFailureNum uint64, qps, maxTime, minTime, avgTime float64) {
+	fmt.Printf("%4.2fs│%7d│%7d│%7d│%8.2f│%8.2fs│%8.2fs│%8.2fs│错误码\n", totalProcessTime/1e9, concurrentNum, totalSuccessNum, totalFailureNum, qps, maxTime/1e9, minTime/1e9, avgTime/1e9)
 
 }
