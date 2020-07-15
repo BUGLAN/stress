@@ -35,9 +35,10 @@ func ReceiveData(ch chan *model.ReqResult, wg *sync.WaitGroup) {
 		for {
 			select {
 			case <-ticker.C:
+				// 定时输出相应的指标
 				out(totalProcessTime, concurrentNum, totalSuccessNum, totalFailureNum, qps, maxTime, minTime, avgTime)
 			case <-stopChan:
-				fmt.Println("STOP!!!")
+				fmt.Println()
 				return
 			}
 		}
