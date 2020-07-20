@@ -35,6 +35,8 @@ func Process(url string, ch chan *model.ReqResult, requestTime int64, wg *sync.W
 		}
 	}
 
+	// verify 验证 进行验证 (errcode)
+
 	ch <- &model.ReqResult{
 		IsSuccess:   isSuccess,
 		StatusCode:  200,

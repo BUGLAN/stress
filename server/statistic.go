@@ -2,14 +2,13 @@ package server
 
 import (
 	"fmt"
-	"math"
 	"sync"
 	"time"
 
 	"github.com/BUGLAN/stress/model"
 )
 
-func ReceiveData(ch chan *model.ReqResult, wg *sync.WaitGroup) {
+func ReceiveData(ch chan *model.ReqResult, startTime time.Time, wg *sync.WaitGroup) {
 	defer wg.Done()
 	stopChan := make(chan struct{})
 	ticker := time.NewTicker(time.Second * 1)
@@ -26,17 +25,18 @@ func ReceiveData(ch chan *model.ReqResult, wg *sync.WaitGroup) {
 		avgTime          float64 // 平均请求耗时
 		concurrentNum    uint64  // 并发数
 		currRequestNum   uint64  // 当前请求数
+		elapsedTime      int     // 耗时
 	)
 
 	// 排除minTime为0的情况
-	minTime = math.MaxFloat64
 
 	go func() {
 		for {
 			select {
 			case <-ticker.C:
+				elapsedTime += 1
 				// 定时输出相应的指标
-				out(totalProcessTime, concurrentNum, totalSuccessNum, totalFailureNum, qps, maxTime, minTime, avgTime)
+				out(elapsedTime, concurrentNum, totalSuccessNum, totalFailureNum, qps, maxTime, minTime, avgTime)
 			case <-stopChan:
 				fmt.Println()
 				return
@@ -59,7 +59,9 @@ func ReceiveData(ch chan *model.ReqResult, wg *sync.WaitGroup) {
 		// fmt.Printf("minTime %f\n", minTime)
 
 		// 最小耗时
-		if data.ProcessTime < minTime {
+		if minTime == 0 {
+			minTime = data.ProcessTime
+		} else if data.ProcessTime < minTime {
 			minTime = data.ProcessTime
 		}
 
@@ -79,7 +81,7 @@ func ReceiveData(ch chan *model.ReqResult, wg *sync.WaitGroup) {
 		avgTime = totalProcessTime / float64(concurrentNum)
 
 		// qps
-		qps = 1e9 / avgTime
+		qps = float64(totalSuccessNum) / float64(elapsedTime)
 
 	}
 
@@ -92,18 +94,18 @@ func ReceiveData(ch chan *model.ReqResult, wg *sync.WaitGroup) {
 	_ = concurrentNum
 	_ = currRequestNum
 	// 最后的输出到控制台 传入
-	out(totalProcessTime, concurrentNum, totalSuccessNum, totalFailureNum, qps, maxTime, minTime, avgTime)
+	out(elapsedTime, concurrentNum, totalSuccessNum, totalFailureNum, qps, maxTime, minTime, avgTime)
 
 }
 
 func tableHeader() {
 	fmt.Printf("\n")
-	fmt.Println(" 耗时│ 并发数│ 成功数│ 失败数│   QPS  │最长耗时│最短耗时│平均耗时│ 错误码")
-	fmt.Println("─────┼───────┼───────┼───────┼────────┼────────┼────────┼────────┼────────")
+	fmt.Println(" 耗时│ 请求数│ 成功数│ 失败数│   QPS  │最长耗时│最短耗时│平均耗时")
+	fmt.Println("─────┼───────┼───────┼───────┼────────┼────────┼────────┼────────")
 }
 
 // out 输出到控制台 单位为纳秒(ns)
-func out(totalProcessTime float64, concurrentNum, totalSuccessNum, totalFailureNum uint64, qps, maxTime, minTime, avgTime float64) {
-	fmt.Printf("%4.2fs│%7d│%7d│%7d│%8.2f│%8.2fs│%8.2fs│%8.2fs│错误码\n", totalProcessTime/1e9, concurrentNum, totalSuccessNum, totalFailureNum, qps, maxTime/1e9, minTime/1e9, avgTime/1e9)
+func out(elapsedTime int, concurrentNum, totalSuccessNum, totalFailureNum uint64, qps, maxTime, minTime, avgTime float64) {
+	fmt.Printf("%4ds│%7d│%7d│%7d│%8.2f│%7.2fs│%7.2fs│%7.2fs \n", elapsedTime, concurrentNum, totalSuccessNum, totalFailureNum, qps, maxTime/1e9, minTime/1e9, avgTime/1e9)
 
 }
