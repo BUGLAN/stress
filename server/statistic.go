@@ -81,7 +81,8 @@ func ReceiveData(ch chan *model.ReqResult, startTime time.Time, wg *sync.WaitGro
 		avgTime = totalProcessTime / float64(concurrentNum)
 
 		// qps
-		qps = float64(totalSuccessNum) / float64(elapsedTime)
+		// qps = float64(totalSuccessNum) / float64(elapsedTime)
+		qps = float64(totalSuccessNum * 1e9) / avgTime
 
 	}
 
