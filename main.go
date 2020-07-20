@@ -41,7 +41,7 @@ func main() {
 
 	ch := make(chan *model.ReqResult, 200)
 	wgReceive.Add(1)
-	go server.ReceiveData(ch,startTime, &wgReceive)
+	go server.ReceiveData(ch, &wgReceive)
 
 	for i := 0; i < model.Coroutines; i++ {
 		wg.Add(1)

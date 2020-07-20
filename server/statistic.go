@@ -8,7 +8,7 @@ import (
 	"github.com/BUGLAN/stress/model"
 )
 
-func ReceiveData(ch chan *model.ReqResult, startTime time.Time, wg *sync.WaitGroup) {
+func ReceiveData(ch chan *model.ReqResult, wg *sync.WaitGroup) {
 	defer wg.Done()
 	stopChan := make(chan struct{})
 	ticker := time.NewTicker(time.Second * 1)
@@ -74,15 +74,15 @@ func ReceiveData(ch chan *model.ReqResult, startTime time.Time, wg *sync.WaitGro
 			totalFailureNum++
 		}
 
-		// 并发数(请求数)
+		// 请求数
 		concurrentNum++
 
 		// 平均耗时
 		avgTime = totalProcessTime / float64(concurrentNum)
 
+
 		// qps
-		// qps = float64(totalSuccessNum) / float64(elapsedTime)
-		qps = float64(totalSuccessNum * 1e9) / avgTime
+		qps = float64(totalSuccessNum * 1e9) / totalProcessTime
 
 	}
 
