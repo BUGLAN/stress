@@ -29,8 +29,7 @@ func Stress(url string, ch chan *model.ReqResult, wg *sync.WaitGroup) {
 		ch <- &model.ReqResult{
 			IsSuccess:   isSuccess,
 			StatusCode:  200,
-			ProcessTime: float64(time.Now().UnixNano() - requestTime),
-			RequestTime: uint64(requestTime),
+			RequestTime: float64(time.Now().UnixNano() - requestTime),
 		}
 	}
 	wg.Done()

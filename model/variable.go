@@ -1,9 +1,9 @@
 package model
 
 var (
-	Coroutines int
-	Num        int
-	Help       bool
-	Url        string
-	Debug      bool
+	CoroutineNum uint64
+	Num          int
+	Help         bool
+	Url          string
+	Debug        bool
 )

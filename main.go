@@ -21,7 +21,7 @@ func main() {
 	flag.StringVar(&model.Url, "u", "", "url 链接 https://www.baidu.com")
 	flag.BoolVar(&model.Help, "h", false, "帮助文档, 示例: stress -c 200 -n 10 -u https://www.baidu.com")
 	flag.IntVar(&model.Num, "n", 0, "连接数")
-	flag.IntVar(&model.Coroutines, "c", 0, "并发数")
+	flag.Uint64Var(&model.CoroutineNum, "c", 0, "并发数")
 	flag.BoolVar(&model.Debug, "d", false, "debug模式")
 	flag.Parse()
 
@@ -41,9 +41,9 @@ func main() {
 
 	ch := make(chan *model.ReqResult, 200)
 	wgReceive.Add(1)
-	go server.ReceiveData(ch, &wgReceive)
+	go server.ReceiveData(model.CoroutineNum, ch, &wgReceive)
 
-	for i := 0; i < model.Coroutines; i++ {
+	for i := 0; i < int(model.CoroutineNum); i++ {
 		wg.Add(1)
 		go server.Stress(model.Url, ch, &wg)
 	}
@@ -65,5 +65,5 @@ debug模式: %v
 并发数:    %d
 并发数量:  %d
 
-`, model.Debug, model.Url, "", model.Coroutines, model.Num)
+`, model.Debug, model.Url, "", model.CoroutineNum, model.Num)
 }
