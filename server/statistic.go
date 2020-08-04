@@ -8,7 +8,7 @@ import (
 	"github.com/BUGLAN/stress/model"
 )
 
-func ReceiveData(coroutineNum uint64, ch chan *model.ReqResult, wg *sync.WaitGroup) {
+func (srv *Server) Receiver(coroutineNum uint64, ch chan *model.ReqResult, wg *sync.WaitGroup) {
 	defer wg.Done()
 	stopChan := make(chan struct{})
 	ticker := time.NewTicker(time.Second * 1)

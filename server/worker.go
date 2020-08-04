@@ -11,7 +11,7 @@ import (
 )
 
 // Stress run the stress testing
-func Stress(url string, ch chan *model.ReqResult, wg *sync.WaitGroup) {
+func (srv *Server) Worker(url string, ch chan *model.ReqResult, wg *sync.WaitGroup) {
 	var err error
 	for i := 0; i < model.Num; i++ {
 		requestTime := time.Now().UnixNano()

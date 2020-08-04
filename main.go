@@ -15,6 +15,8 @@ import (
 func main() {
 	// set runtime process
 	runtime.GOMAXPROCS(1)
+
+	// set start time
 	startTime := time.Now()
 
 	// set flag vars
@@ -25,6 +27,7 @@ func main() {
 	flag.BoolVar(&model.Debug, "d", false, "debug模式")
 	flag.Parse()
 
+	// hint
 	if model.Help {
 		flag.Usage()
 		return
@@ -39,14 +42,16 @@ func main() {
 		wgReceive sync.WaitGroup
 	)
 
-	ch := make(chan *model.ReqResult, 200)
+	// create server
+	srv := server.NewServer()
+	ch := make(chan *model.ReqResult, 1000)
 	wgReceive.Add(1)
-	go server.ReceiveData(model.CoroutineNum, ch, &wgReceive)
+	go srv.Receiver(model.CoroutineNum, ch, &wgReceive)
 
+	// do worker
 	for i := 0; i < int(model.CoroutineNum); i++ {
 		wg.Add(1)
-		go server.Stress(model.Url, ch, &wg)
-	}
+		go srv.Worker(model.Url, ch, &wg) }
 
 	wg.Wait()
 	close(ch)
