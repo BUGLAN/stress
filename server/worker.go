@@ -12,11 +12,12 @@ import (
 
 // Stress run the stress testing
 func (srv *Server) Worker(url string, ch chan *model.ReqResult, wg *sync.WaitGroup) {
+	httpClient := client.NewHTTPClient()
 	var err error
 	for i := 0; i < model.Num; i++ {
 		requestTime := time.Now().UnixNano()
 
-		err = client.Get(url, http.Header{})
+		err = httpClient.Get(url, http.Header{})
 
 		isSuccess := true
 		if err != nil {

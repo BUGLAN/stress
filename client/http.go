@@ -10,8 +10,20 @@ import (
 	"time"
 )
 
-func Get(url string, header http.Header) error {
-	rc, err := request("GET", url, header, bytes.NewBuffer(nil), time.Second*30)
+type HTTPClient struct {
+}
+
+func NewHTTPClient() *HTTPClient {
+	return &HTTPClient{}
+}
+
+type HTTP interface {
+	Get(url string, header http.Header) error
+	Post(url string, header http.Header, body, v interface{}) error
+}
+
+func (c *HTTPClient) Get(url string, header http.Header) error {
+	rc, err := c.request("GET", url, header, bytes.NewBuffer(nil), time.Second*30)
 	if err != nil || rc == nil {
 		return err
 	}
@@ -20,12 +32,12 @@ func Get(url string, header http.Header) error {
 }
 
 // Post 发起post请求
-func Post(url string, header http.Header, body, v interface{}) error {
+func (c *HTTPClient) Post(url string, header http.Header, body, v interface{}) error {
 	data, err := json.Marshal(body)
 	if err != nil {
 		return err
 	}
-	rc, err := request("POST", url, header, bytes.NewBuffer(data), 0)
+	rc, err := c.request("POST", url, header, bytes.NewBuffer(data), 0)
 	if err != nil || rc == nil {
 		return err
 	}
@@ -33,7 +45,7 @@ func Post(url string, header http.Header, body, v interface{}) error {
 	return nil
 }
 
-func request(method, url string, header http.Header, body io.Reader, timeout time.Duration) (io.ReadCloser, error) {
+func (c *HTTPClient) request(method, url string, header http.Header, body io.Reader, timeout time.Duration) (io.ReadCloser, error) {
 	client := &http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
