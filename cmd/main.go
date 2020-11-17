@@ -51,7 +51,8 @@ func main() {
 	// do worker
 	for i := 0; i < int(model.CoroutineNum); i++ {
 		wg.Add(1)
-		go srv.Worker(model.Url, ch, &wg) }
+		go srv.Worker(model.Url, ch, &wg)
+	}
 
 	wg.Wait()
 	close(ch)
