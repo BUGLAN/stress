@@ -7,8 +7,8 @@ import (
 func main() {
 	s := stress.NewStressServer()
 	s.Url = "https://www.baidu.com"
-	s.RequestNum = 1000
+	s.RequestNum = 100
 	s.CoroutineNum = 100
-	s.Handler = stress.StressHTTPHandler
+	s.Handler = stress.HttpHandler
 	s.Start()
 }
