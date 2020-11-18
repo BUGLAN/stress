@@ -2,6 +2,7 @@ package stress
 
 import (
 	"fmt"
+	"sync/atomic"
 	"net/http"
 	"sync"
 	"time"
@@ -22,6 +23,7 @@ type ReqResult struct {
 
 // StressServer struct
 type StressServer struct {
+	StartTime    time.Time
 	logger       zerolog.Logger
 	RequestNum   int // 请求数
 	ConnectNum   int // 连接数
@@ -30,6 +32,7 @@ type StressServer struct {
 	CoroutineNum int // 同一时间最高并发数
 	Handler      Handler
 	limiter      chan struct{} // 并发限制
+	num          int64
 }
 
 // NewStressServer 构造函数
@@ -51,6 +54,7 @@ func HttpHandler(s *StressServer) error {
 	httpClient := client.NewHTTPClient()
 	requestTime := time.Now().UnixNano()
 	err = httpClient.Get(s.Url, http.Header{})
+	atomic.AddInt64(&s.num, 1)
 	fmt.Println(s.Url)
 
 	isSuccess := true
@@ -71,6 +75,7 @@ func (srv *StressServer) Worker(wg *sync.WaitGroup) {
 
 	fmt.Println("start Worker")
 	srv.limiter <- struct{}{}
+	// TODO need add RequestNum
 	if err := srv.Handler(srv); err != nil {
 		srv.logger.Warn().Err(err)
 	}
@@ -88,13 +93,14 @@ func (srv *StressServer) Collect(wg *sync.WaitGroup) {
 }
 
 func (srv *StressServer) Start() {
+	srv.StartTime = time.Now()
 	wg := sync.WaitGroup{}
 	wg2 := sync.WaitGroup{}
 	wg2.Add(1)
 	go srv.Collect(&wg2)
 
 	// worker
-	for i := 0; i < srv.RequestNum; i++ {
+	for i := 0; i < srv.CoroutineNum; i++ {
 		wg.Add(1)
 		go srv.Worker(&wg)
 	}
@@ -102,5 +108,12 @@ func (srv *StressServer) Start() {
 	wg.Wait()
 	close(srv.ch)
 	wg2.Wait()
+
+	// 输出最终结果
 	fmt.Printf("done")
+	fmt.Println(srv.num)
+	fmt.Println(float64(srv.num) / time.Now().Sub(srv.StartTime).Seconds())
 }
+
+
+// qps == end_time - start_time
